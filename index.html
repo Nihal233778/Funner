@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Chanify — Add Bot</title>
+
+    <!-- Telegram Mini App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js?56">
+    </script>
+
+    <style>
+        /* ── Reset & Base ── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f12;
+            --bg-secondary: #1c1c24;
+            --bg-card: #23232e;
+            --bg-input: #2a2a36;
+            --bg-hover: #2f2f3d;
+            --border-color: #3a3a4a;
+            --text-primary: #f0f0f5;
+            --text-secondary: #9a9aae;
+            --text-muted: #6a6a82;
+            --accent: #5b7cfa;
+            --accent-hover: #4a6ae0;
+            --accent-glow: rgba(91, 124, 250, 0.25);
+            --green: #4cd9a0;
+            --red: #f56c6c;
+            --radius: 14px;
+            --radius-sm: 10px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --transition: 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 8px;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-bar {
+            height: env(safe-area-inset-top, 8px);
+            flex-shrink: 0;
+            background: var(--bg-primary);
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px 8px 18px;
+            flex-shrink: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            min-height: 56px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            padding: 4px 4px 4px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition);
+            line-height: 1;
+        }
+        .back-btn:hover {
+            color: var(--text-primary);
+        }
+        .back-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .header-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-badge {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            padding: 4px;
+            cursor: pointer;
+            transition: color var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .menu-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 16px 18px 100px 18px;
+            scroll-behavior: smooth;
+        }
+
+        /* ── Balance Card ── */
+        .balance-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color var(--transition);
+        }
+        .balance-card:hover {
+            border-color: var(--accent);
+        }
+
+        .balance-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            font-variant-numeric: tabular-nums;
+        }
+        .balance-amount .currency {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-right: 4px;
+        }
+
+        .balance-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Publisher Info ── */
+        .publisher-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 4px 14px 4px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .publisher-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .publisher-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #5b7cfa, #8b6cf7);
+        }
+
+        .publisher-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .publisher-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .publisher-action {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            transition: color var(--transition);
+        }
+        .publisher-action:hover {
+            color: var(--accent-hover);
+        }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 0 2px 16px 2px;
+            flex-wrap: wrap;
+        }
+        .breadcrumb span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .breadcrumb .sep {
+            color: var(--border-color);
+            font-weight: 300;
+        }
+        .breadcrumb .crumb-link {
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color var(--transition);
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        .breadcrumb .crumb-link:hover {
+            color: var(--text-primary);
+        }
+        .breadcrumb .crumb-current {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* ── Step Header ── */
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .step-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .step-counter {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .step-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 18px;
+        }
+
+        /* ── Progress Bar ── */
+        .progress-wrap {
+            background: var(--bg-secondary);
+            border-radius: 100px;
+            height: 4px;
+            margin: 12px 0 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 33%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--accent), #8b6cf7);
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15));
+            border-radius: 100px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .progress-label .pct {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* ── Step Container ── */
+        .step-container {
+            animation: fadeSlideUp 0.35s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Form Elements ── */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+        .form-label .required {
+            color: var(--red);
+            margin-left: 2px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: var(--font);
+            transition: border-color var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+        .form-input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .input-with-action {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .input-with-action .form-input {
+            flex: 1;
+        }
+
+        .btn-verify {
+            padding: 0 20px;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+            font-family: var(--font);
+            flex-shrink: 0;
+        }
+        .btn-verify:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        .btn-verify:active {
+            transform: scale(0.96);
+        }
+        .btn-verify.verified {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(76, 217, 160, 0.08);
+        }
+        .btn-verify.verified:hover {
+            background: rgba(76, 217, 160, 0.15);
+        }
+
+        /* ── Token Help ── */
+        .token-help {
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            margin: 4px 0 16px 0;
+            line-height: 1.6;
+        }
+        .token-help a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .token-help a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Safety Message ── */
+        .safety-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(91, 124, 250, 0.06);
+            border: 1px solid rgba(91, 124, 250, 0.15);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            margin: 16px 0 20px 0;
+        }
+        .safety-msg .icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .safety-msg .text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .safety-msg .text strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ── Step 2: Bot Details ── */
+        .detail-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .detail-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .detail-value .token-preview {
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg-input);
+            padding: 2px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        /* ── Category Grid (NEW) ── */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .category-card {
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 14px 6px 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            user-select: none;
+        }
+        .category-card:hover {
+            border-color: var(--text-muted);
+            background: var(--bg-hover);
+        }
+        .category-card:active {
+            transform: scale(0.96);
+        }
+        .category-card .cat-icon {
+            font-size: 28px;
+            line-height: 1.2;
+        }
+        .category-card .cat-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: color var(--transition);
+        }
+        .category-card.selected {
+            border-color: var(--accent);
+            background: rgba(91, 124, 250, 0.08);
+            box-shadow: 0 0 0 1px var(--accent), 0 0 16px var(--accent-glow);
+        }
+        .category-card.selected .cat-name {
+            color: var(--text-primary);
+        }
+        .category-card .cat-check {
+            opacity: 0;
+            transition: opacity var(--transition);
+            font-size: 14px;
+            color: var(--accent);
+        }
+        .category-card.selected .cat-check {
+            opacity: 1;
+        }
+
+        /* ── Step 3: Confirmation ── */
+        .confirmation-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .confirmation-card .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .confirmation-card .row:last-child {
+            border-bottom: none;
+        }
+        .confirmation-card .row .lbl {
+            color: var(--text-secondary);
+        }
+        .confirmation-card .row .val {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .confirmation-card .row .val .cat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-input);
+            padding: 2px 12px 2px 8px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+        }
+
+        .monetization-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .monetization-toggle .info .title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .monetization-toggle .info .desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Toggle Switch ── */
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .toggle .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-input);
+            border-radius: 100px;
+            transition: background var(--transition);
+            border: 1.5px solid var(--border-color);
+        }
+        .toggle .slider::before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 2.5px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: transform var(--transition), background var(--transition);
+        }
+        .toggle input:checked+.slider {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .toggle input:checked+.slider::before {
+            transform: translateX(20px);
+            background: #fff;
+        }
+
+        /* ── Action Buttons ── */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 600;
+            font-family: var(--font);
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition);
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-success {
+            background: var(--green);
+            color: #0f0f12;
+        }
+        .btn-success:hover {
+            filter: brightness(1.05);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            max-width: 90%;
+            text-align: center;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(28, 28, 36, 0.92);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .toast.success {
+            border-color: var(--green);
+        }
+        .toast.error {
+            border-color: var(--red);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 15px;
+            }
+            .balance-amount {
+                font-size: 24px;
+            }
+            .step-title {
+                font-size: 18px;
+            }
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 4px;
+                padding: 8px 0;
+            }
+            .detail-label {
+                font-size: 12px;
+            }
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-width: 80px;
+            }
+            .actions {
+                gap: 8px;
+            }
+            .input-with-action {
+                flex-direction: column;
+            }
+            .btn-verify {
+                padding: 10px;
+            }
+            .category-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .category-card .cat-icon {
+                font-size: 24px;
+            }
+            .category-card .cat-name {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 481px) {
+            #app {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+                box-shadow: var(--shadow);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, var(--bg-input) 25%, var(--bg-hover) 50%, var(--bg-input) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--green);
+            background: rgba(76, 217, 160, 0.1);
+            padding: 2px 12px 2px 8px;
+            border-radius: 20px;
+            border: 1px solid rgba(76, 217, 160, 0.2);
+            margin-left: 6px;
+        }
+        .verified-badge svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--green);
+        }
+
+        /* Category helper text */
+        .category-helper {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .category-helper strong {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div class="status-bar"></div>
+
+        <!-- ─── HEADER ─── -->
+        <header class="header">
+            <div class="header-left">
+                <button class="back-btn" id="backBtn" aria-label="Go back">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <span class="header-title">Add Bot</span>
+            </div>
+            <div class="header-right">
+                <span class="header-badge">v2.1</span>
+                <button class="menu-btn" aria-label="Menu">⋯</button>
+            </div>
+        </header>
+
+        <!-- ─── MAIN ─── -->
+        <div class="main-content" id="mainContent">
+
+            <!-- Balance -->
+            <div class="balance-card">
+                <div>
+                    <div class="balance-label">Balance USD</div>
+                    <div class="balance-amount">
+                        <span class="currency">$</span>0.000
+                    </div>
+                </div>
+                <div class="balance-status">
+                    <span class="status-dot"></span>
+                    <span class="status-label">Live</span>
+                </div>
+            </div>
+
+            <!-- Publisher -->
+            <div class="publisher-row">
+                <div class="publisher-info">
+                    <div class="publisher-avatar">AJ</div>
+                    <div>
+                        <div class="publisher-name">Abrar Jahin</div>
+                        <div class="publisher-role">Publisher</div>
+                    </div>
+                </div>
+                <button class="publisher-action" id="profileBtn">Profile →</button>
+            </div>
+
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <span><button class="crumb-link">Chanify</button></span>
+                <span class="sep">›</span>
+                <span><button class="crumb-link">Publisher</button></span>
+                <span class="sep">›</span>
+                <span><button class="crumb-link">My Bots</button></span>
+                <span class="sep">›</span>
+                <span><button class="crumb-link crumb-current">Add Bot</button></span>
+            </nav>
+
+            <!-- ─── STEP CONTAINER ─── -->
+            <div id="stepContainer">
+
+                <!-- Step Header -->
+                <div class="step-header">
+                    <h2 class="step-title" id="stepTitle">Connect Bot</h2>
+                    <span class="step-counter" id="stepCounter">STEP: 1 OF 3</span>
+                </div>
+                <div class="step-sub" id="stepSub">Connect your Telegram bot to start earning from ad placements</div>
+
+                <!-- Progress -->
+                <div class="progress-wrap">
+                    <div class="progress-fill" id="progressFill" style="width:33%"></div>
+                </div>
+                <div class="progress-label">
+                    <span id="progressStepLabel">Step 1: Connect</span>
+                    <span class="pct" id="progressPct">33%</span>
+                </div>
+
+                <!-- ─── STEP 1 ─── -->
+                <div class="step-container" id="step1">
+                    <div class="form-group">
+                        <label class="form-label" for="botToken">
+                            Bot Token <span class="required">*</span>
+                        </label>
+                        <div class="input-with-action">
+                            <input
+                            type="text"
+                            class="form-input"
+                            id="botToken"
+                            placeholder="1234567890:AAFxxxxxxxxxx"
+                            autocomplete="off"
+                            spellcheck="false"
+                            />
+                            <button class="btn-verify" id="verifyBtn">Verify</button>
+                        </div>
+                    </div>
+
+                    <div class="token-help">
+                        Get your token from <strong>@BotFather</strong> on Telegram.
+                        Use <code style="background:var(--bg-input);padding:1px 8px;border-radius:4px;">/newbot</code> or
+                        <code style="background:var(--bg-input);padding:1px 8px;border-radius:4px;">/mybots</code> to find it.
+                    </div>
+
+                    <div class="safety-msg">
+                        <span class="icon">🔒</span>
+                        <div class="text">
+                            <strong>Keep your token safe.</strong> Chanify encrypts it with AES-256-GCM —
+                            no one except the system can access it. Never share it publicly.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── STEP 2 ─── -->
+                <div class="step-container hidden" id="step2">
+                    <div style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+                        Review your bot details and pick a category.
+                    </div>
+
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="detail-label">Bot Name</span>
+                            <span class="detail-value" id="botNameDisplay">—</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Bot Username</span>
+                            <span class="detail-value" id="botUsernameDisplay">—</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Token</span>
+                            <span class="detail-value">
+                                <span class="token-preview" id="botTokenPreview">••••••••</span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value" style="color:var(--green);">
+                                <span style="display:inline-flex;align-items:center;gap:6px;">
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);"></span>
+                                    Verified
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ─── CATEGORY GRID ─── -->
+                    <div class="form-group" style="margin-top:20px;">
+                        <label class="form-label" style="margin-bottom:4px;">
+                            Bot Category <span class="required">*</span>
+                        </label>
+                        <div class="category-helper">
+                            Choose a category that best fits your bot — this helps with ad targeting.
+                        </div>
+                        <div class="category-grid" id="categoryGrid">
+                            <!-- Categories injected by JS -->
+                        </div>
+                        <div style="margin-top:8px;font-size:12px;color:var(--text-muted);text-align:center;" id="categoryFeedback">
+                            Select a category above
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── STEP 3 ─── -->
+                <div class="step-container hidden" id="step3">
+                    <div style="margin-bottom:16px;font-size:14px;color:var(--text-secondary);">
+                        Almost done! Confirm your bot and set monetization preferences.
+                    </div>
+
+                    <div class="confirmation-card">
+                        <div class="row">
+                            <span class="lbl">Bot Name</span>
+                            <span class="val" id="confirmBotName">—</span>
+                        </div>
+                        <div class="row">
+                            <span class="lbl">Username</span>
+                            <span class="val" id="confirmBotUsername">—</span>
+                        </div>
+                        <div class="row">
+                            <span class="lbl">Category</span>
+                            <span class="val" id="confirmCategory">
+                                <span class="cat-badge">🎮 Game</span>
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span class="lbl">Status</span>
+                            <span class="val" style="color:var(--green);">✅ Verified</span>
+                        </div>
+                    </div>
+
+                    <div class="monetization-toggle">
+                        <div class="info">
+                            <div class="title">Enable Ad Monetization</div>
+                            <div class="desc">Show ads in your bot to start earning</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="monetizationToggle" checked />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div style="margin-top:12px;font-size:13px;color:var(--text-secondary);background:var(--bg-secondary);padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);">
+                        💰 Estimated earnings: <strong style="color:var(--text-primary);">$0.00 – $0.50</strong> / 1K impressions
+                    </div>
+                </div>
+
+                <!-- ─── ACTIONS ─── -->
+                <div class="actions">
+                    <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button class="btn btn-primary" id="continueBtn">Continue →</button>
+                </div>
+
+            </div><!-- /stepContainer -->
+
+        </div><!-- /main-content -->
+
+        <!-- ─── TOAST ─── -->
+        <div class="toast" id="toast"></div>
+
+    </div><!-- /app -->
+
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── CATEGORIES ───
+            const CATEGORIES = [
+                { id: 'game', icon: '🎮', label: 'Game' },
+                { id: 'utility', icon: '🛠️', label: 'Utility' },
+                { id: 'finance', icon: '📊', label: 'Finance' },
+                { id: 'ecommerce', icon: '🛍️', label: 'E-Commerce' },
+                { id: 'social', icon: '💬', label: 'Social' },
+                { id: 'news', icon: '📰', label: 'News' },
+                { id: 'entertainment', icon: '🎵', label: 'Entertainment' },
+                { id: 'education', icon: '🎓', label: 'Education' },
+                { id: 'health', icon: '🏥', label: 'Health' },
+                { id: 'productivity', icon: '🚀', label: 'Productivity' },
+            ];
+
+            // ─── DOM refs ───
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const stepTitle = document.getElementById('stepTitle');
+            const stepCounter = document.getElementById('stepCounter');
+            const stepSub = document.getElementById('stepSub');
+            const progressFill = document.getElementById('progressFill');
+            const progressStepLabel = document.getElementById('progressStepLabel');
+            const progressPct = document.getElementById('progressPct');
+            const botToken = document.getElementById('botToken');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const continueBtn = document.getElementById('continueBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const backBtn = document.getElementById('backBtn');
+            const toast = document.getElementById('toast');
+            const botNameDisplay = document.getElementById('botNameDisplay');
+            const botUsernameDisplay = document.getElementById('botUsernameDisplay');
+            const botTokenPreview = document.getElementById('botTokenPreview');
+            const confirmBotName = document.getElementById('confirmBotName');
+            const confirmBotUsername = document.getElementById('confirmBotUsername');
+            const confirmCategory = document.getElementById('confirmCategory');
+            const categoryGrid = document.getElementById('categoryGrid');
+            const categoryFeedback = document.getElementById('categoryFeedback');
+            const monetizationToggle = document.getElementById('monetizationToggle');
+
+            // ─── State ───
+            let currentStep = 1;
+            let tokenVerified = false;
+            let tokenValue = '';
+            let botName = '';
+            let botUsername = '';
+            let selectedCategoryId = 'game';
+            let selectedCategory = CATEGORIES[0];
+
+            // ─── Render Categories ───
+            function renderCategories() {
+                categoryGrid.innerHTML = '';
+                CATEGORIES.forEach(cat => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card' + (cat.id === selectedCategoryId ? ' selected' : '');
+                    card.dataset.id = cat.id;
+                    card.innerHTML = `
+                        <div class="cat-icon">${cat.icon}</div>
+                        <div class="cat-name">${cat.label}</div>
+                        <div class="cat-check">✓</div>
+                    `;
+                    card.addEventListener('click', () => {
+                        selectCategory(cat.id);
+                    });
+                    categoryGrid.appendChild(card);
+                });
+                updateCategoryFeedback();
+            }
+
+            function selectCategory(id) {
+                const cat = CATEGORIES.find(c => c.id === id);
+                if (!cat) return;
+                selectedCategoryId = id;
+                selectedCategory = cat;
+                // Update UI
+                document.querySelectorAll('.category-card').forEach(el => {
+                    el.classList.toggle('selected', el.dataset.id === id);
+                });
+                updateCategoryFeedback();
+                // If we're on step 3, update the confirmation
+                if (currentStep === 3) {
+                    updateConfirmCategory();
+                }
+            }
+
+            function updateCategoryFeedback() {
+                const cat = CATEGORIES.find(c => c.id === selectedCategoryId);
+                if (cat) {
+                    categoryFeedback.textContent = `✅ Selected: ${cat.icon} ${cat.label}`;
+                    categoryFeedback.style.color = 'var(--text-secondary)';
+                } else {
+                    categoryFeedback.textContent = 'Select a category above';
+                    categoryFeedback.style.color = 'var(--text-muted)';
+                }
+            }
+
+            function updateConfirmCategory() {
+                const cat = CATEGORIES.find(c => c.id === selectedCategoryId) || CATEGORIES[0];
+                confirmCategory.innerHTML = `<span class="cat-badge">${cat.icon} ${cat.label}</span>`;
+            }
+
+            // ─── Helpers ───
+            function showToast(msg, type = 'info', duration = 2800) {
+                toast.textContent = msg;
+                toast.className = 'toast ' + type;
+                void toast.offsetWidth;
+                toast.classList.add('show');
+                clearTimeout(toast._hideTimer);
+                toast._hideTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            function extractBotInfo(token) {
+                const parts = token.split(':');
+                if (parts.length === 2 && parts[0].match(/^\d+$/)) {
+                    const id = parts[0];
+                    const hash = parts[1].slice(0, 6);
+                    return {
+                        name: 'MyBot_' + id.slice(-4),
+                        username: 'my_bot_' + id.slice(-4),
+                        display: id + ':' + hash + '••••'
+                    };
+                }
+                return null;
+            }
+
+            function verifyToken(token) {
+                const trimmed = token.trim();
+                const match = trimmed.match(/^(\d+):([A-Za-z0-9_\-]+)$/);
+                if (!match) return { valid: false, reason: 'Invalid token format' };
+                const id = match[1];
+                const secret = match[2];
+                if (id.length < 5 || secret.length < 5) {
+                    return { valid: false, reason: 'Token too short' };
+                }
+                const info = extractBotInfo(trimmed);
+                if (info) {
+                    return { valid: true, info };
+                }
+                return { valid: false, reason: 'Could not verify token' };
+            }
+
+            function updateStepUI(step) {
+                step1.classList.toggle('hidden', step !== 1);
+                step2.classList.toggle('hidden', step !== 2);
+                step3.classList.toggle('hidden', step !== 3);
+
+                const labels = {
+                    1: { title: 'Connect Bot', counter: 'STEP: 1 OF 3', sub: 'Connect your Telegram bot to start earning from ad placements',
+                        progLabel: 'Step 1: Connect', pct: '33%', width: '33%' },
+                    2: { title: 'Bot Details', counter: 'STEP: 2 OF 3', sub: 'Review your bot information and pick a category',
+                        progLabel: 'Step 2: Details', pct: '66%', width: '66%' },
+                    3: { title: 'Confirm & Monetize', counter: 'STEP: 3 OF 3',
+                        sub: 'Finalize your bot setup and enable ad monetization', progLabel: 'Step 3: Confirm',
+                        pct: '100%', width: '100%' }
+                };
+
+                const l = labels[step];
+                stepTitle.textContent = l.title;
+                stepCounter.textContent = l.counter;
+                stepSub.textContent = l.sub;
+                progressStepLabel.textContent = l.progLabel;
+                progressPct.textContent = l.pct;
+                progressFill.style.width = l.width;
+
+                if (step === 3) {
+                    continueBtn.textContent = '✅ Create Bot';
+                    continueBtn.className = 'btn btn-success';
+                } else {
+                    continueBtn.textContent = 'Continue →';
+                    continueBtn.className = 'btn btn-primary';
+                }
+
+                if (step === 1) {
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = tokenVerified ? '✓ Verified' : 'Verify';
+                    verifyBtn.className = 'btn-verify' + (tokenVerified ? ' verified' : '');
+                } else {
+                    verifyBtn.disabled = true;
+                }
+
+                document.getElementById('mainContent').scrollTop = 0;
+            }
+
+            function goToStep(step) {
+                if (step < 1 || step > 3) return;
+                currentStep = step;
+                updateStepUI(step);
+
+                if (step === 2) {
+                    populateStep2();
+                }
+                if (step === 3) {
+                    populateStep3();
+                }
+            }
+
+            function populateStep2() {
+                if (tokenVerified && tokenValue) {
+                    const info = extractBotInfo(tokenValue);
+                    if (info) {
+                        botName = info.name;
+                        botUsername = info.username;
+                        botNameDisplay.textContent = info.name;
+                        botUsernameDisplay.textContent = info.username;
+                        botTokenPreview.textContent = info.display;
+                    } else {
+                        botNameDisplay.textContent = '—';
+                        botUsernameDisplay.textContent = '—';
+                        botTokenPreview.textContent = '••••••••';
+                    }
+                } else {
+                    botNameDisplay.textContent = '—';
+                    botUsernameDisplay.textContent = '—';
+                    botTokenPreview.textContent = '••••••••';
+                }
+                // Ensure category grid is rendered
+                renderCategories();
+                // If no category selected, default to first
+                if (!selectedCategoryId) {
+                    selectCategory(CATEGORIES[0].id);
+                }
+                updateCategoryFeedback();
+            }
+
+            function populateStep3() {
+                const name = botName || 'Unnamed Bot';
+                const username = botUsername || 'unknown_bot';
+                confirmBotName.textContent = name;
+                confirmBotUsername.textContent = username;
+                updateConfirmCategory();
+            }
+
+            function handleVerify() {
+                const token = botToken.value.trim();
+                if (!token) {
+                    showToast('Please enter a bot token', 'error');
+                    return;
+                }
+                const result = verifyToken(token);
+                if (result.valid && result.info) {
+                    tokenVerified = true;
+                    tokenValue = token;
+                    verifyBtn.textContent = '✓ Verified';
+                    verifyBtn.className = 'btn-verify verified';
+                    showToast('✅ Bot token verified successfully!', 'success');
+                    botName = result.info.name;
+                    botUsername = result.info.username;
+                    continueBtn.disabled = false;
+                } else {
+                    tokenVerified = false;
+                    tokenValue = '';
+                    verifyBtn.textContent = 'Verify';
+                    verifyBtn.className = 'btn-verify';
+                    showToast('❌ ' + (result.reason || 'Invalid token'), 'error');
+                    continueBtn.disabled = true;
+                }
+            }
+
+            function handleContinue() {
+                if (currentStep === 1) {
+                    if (!tokenVerified) {
+                        showToast('Please verify your bot token first', 'error');
+                        return;
+                    }
+                    goToStep(2);
+                } else if (currentStep === 2) {
+                    // Check if category is selected
+                    if (!selectedCategoryId) {
+                        showToast('Please select a category for your bot', 'error');
+                        return;
+                    }
+                    goToStep(3);
+                } else if (currentStep === 3) {
+                    const name = botName || 'Unnamed Bot';
+                    const username = botUsername || 'unknown_bot';
+                    const cat = CATEGORIES.find(c => c.id === selectedCategoryId) || CATEGORIES[0];
+                    const monetization = monetizationToggle.checked ? 'Enabled' : 'Disabled';
+
+                    showToast('🚀 Creating bot "' + name + '"...', 'info', 2000);
+
+                    setTimeout(() => {
+                        showToast('🎉 Bot "' + name + '" created! Category: ' + cat.icon + ' ' + cat.label +
+                            ' | Monetization: ' + monetization, 'success', 4000);
+                        setTimeout(() => {
+                            resetFlow();
+                        }, 3000);
+                    }, 1500);
+
+                    continueBtn.disabled = true;
+                    continueBtn.textContent = '⏳ Creating...';
+                    setTimeout(() => {
+                        continueBtn.disabled = false;
+                        if (currentStep === 3) {
+                            continueBtn.textContent = '✅ Create Bot';
+                        }
+                    }, 3000);
+                }
+            }
+
+            function resetFlow() {
+                currentStep = 1;
+                tokenVerified = false;
+                tokenValue = '';
+                botToken.value = '';
+                verifyBtn.textContent = 'Verify';
+                verifyBtn.className = 'btn-verify';
+                continueBtn.disabled = false;
+                continueBtn.textContent = 'Continue →';
+                continueBtn.className = 'btn btn-primary';
+                botName = '';
+                botUsername = '';
+                botNameDisplay.textContent = '—';
+                botUsernameDisplay.textContent = '—';
+                botTokenPreview.textContent = '••••••••';
+                confirmBotName.textContent = '—';
+                confirmBotUsername.textContent = '—';
+                selectedCategoryId = CATEGORIES[0].id;
+                selectedCategory = CATEGORIES[0];
+                monetizationToggle.checked = true;
+                renderCategories();
+                updateCategoryFeedback();
+                goToStep(1);
+                showToast('🔄 Flow reset', 'info', 1500);
+            }
+
+            function handleCancel() {
+                if (currentStep === 1) {
+                    showToast('Cancelled. You can start again.', 'info');
+                    resetFlow();
+                } else {
+                    goToStep(1);
+                    showToast('Going back to step 1', 'info', 1200);
+                }
+            }
+
+            function handleBack() {
+                if (currentStep === 1) {
+                    showToast('Already at first step', 'info', 1000);
+                } else {
+                    goToStep(currentStep - 1);
+                }
+            }
+
+            // ─── Event Listeners ───
+            verifyBtn.addEventListener('click', handleVerify);
+
+            botToken.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleVerify();
+                }
+            });
+
+            continueBtn.addEventListener('click', handleContinue);
+            cancelBtn.addEventListener('click', handleCancel);
+            backBtn.addEventListener('click', handleBack);
+
+            document.getElementById('profileBtn').addEventListener('click', () => {
+                showToast('👤 Publisher: Abrar Jahin', 'info', 2000);
+            });
+
+            document.querySelectorAll('.crumb-link').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const txt = el.textContent.trim();
+                    if (txt === 'Add Bot') {
+                        showToast('📍 You are here', 'info', 1200);
+                    } else {
+                        showToast('🔗 Navigate to ' + txt, 'info', 1500);
+                    }
+                });
+            });
+
+            document.querySelector('.menu-btn').addEventListener('click', () => {
+                showToast('📋 Menu (simulated)', 'info', 1500);
+            });
+
+            // ─── Init ───
+            // Pre-select first category
+            selectedCategoryId = CATEGORIES[0].id;
+            selectedCategory = CATEGORIES[0];
+            renderCategories();
+            updateCategoryFeedback();
+            goToStep(1);
+
+            // Telegram Mini App
+            try {
+                const tg = window.Telegram?.WebApp;
+                if (tg) {
+                    tg.ready();
+                    tg.expand();
+                }
+            } catch (_) {}
+
+            window.__chanify = { goToStep, resetFlow, showToast, selectCategory };
+
+        })();
+    </script>
+
+</body>
+</html>
