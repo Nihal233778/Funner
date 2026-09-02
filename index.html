@@ -1,2066 +1,272 @@
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Cash App · Earn</title>
-
-    <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js">
-    </script>
-
-    <!-- Monetix Ads -->
-    <script src="https://www.monetixads.online/ads.js" data-mxid="MX-CDE2FE45">
-    </script>
-
-    <style>
-        /* ─── CSS Variables ─── */
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #141414;
-            --bg-card: #1c1c1e;
-            --bg-input: #2c2c2e;
-            --text-primary: #ffffff;
-            --text-secondary: #8e8e93;
-            --text-muted: #5a5a5e;
-            --accent: #00d632;
-            --accent-dim: #00d63233;
-            --accent-glow: #00d63255;
-            --gold: #f5a623;
-            --gold-dim: #f5a62333;
-            --red: #ff3b30;
-            --orange: #ff9500;
-            --blue: #007aff;
-            --border: #2c2c2e;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-            --radius: 16px;
-            --radius-sm: 10px;
-            --radius-full: 9999px;
-            --safe-top: env(safe-area-inset-top, 20px);
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
-            --nav-height: 72px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ─── Reset ─── */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html,
-        body {
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow: hidden;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        ::-webkit-scrollbar {
-            width: 3px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
-            border-radius: 99px;
-        }
-
-        /* ─── App Shell ─── */
-        #app {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-            background: var(--bg-primary);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .status-bar {
-            height: var(--safe-top);
-            flex-shrink: 0;
-            background: var(--bg-primary);
-        }
-
-        /* ─── Header ─── */
-        .app-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px 8px;
-            flex-shrink: 0;
-            background: var(--bg-primary);
-            z-index: 10;
-        }
-
-        .app-header .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 20px;
-            letter-spacing: -0.5px;
-        }
-
-        .app-header .logo .icon {
-            width: 36px;
-            height: 36px;
-            background: var(--accent);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 800;
-            color: #000;
-        }
-
-        .app-header .actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        .app-header .actions button {
-            background: var(--bg-card);
-            border: none;
-            color: var(--text-primary);
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-full);
-            font-size: 18px;
-            cursor: pointer;
-            transition: background var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .app-header .actions button:active {
-            background: var(--bg-input);
-            transform: scale(0.94);
-        }
-
-        /* ─── Main Content ─── */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 4px 16px 100px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* ─── Screens ─── */
-        .screen {
-            display: none;
-            animation: fadeSlide 0.35s ease forwards;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeSlide {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ─── Balance Card ─── */
-        .balance-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 24px 20px 20px;
-            margin: 8px 0 20px;
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .balance-card::after {
-            content: '';
-            position: absolute;
-            top: -60%;
-            right: -20%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, var(--accent-dim), transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .balance-card .label {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .balance-card .amount {
-            font-size: 42px;
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin: 4px 0 6px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .balance-card .amount .currency {
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-right: 2px;
-        }
-
-        .balance-card .change {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 2px 10px 2px 6px;
-            border-radius: var(--radius-full);
-            background: var(--accent-dim);
-            color: var(--accent);
-            position: relative;
-            z-index: 1;
-        }
-
-        .balance-card .change.negative {
-            background: #ff3b3022;
-            color: var(--red);
-        }
-
-        /* ─── Quick Actions ─── */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin: 4px 0 20px;
-        }
-
-        .quick-actions .action {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 4px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            position: relative;
-        }
-
-        .quick-actions .action:active {
-            transform: scale(0.94);
-            background: var(--bg-input);
-        }
-
-        .quick-actions .action .emoji {
-            font-size: 22px;
-            line-height: 1;
-        }
-
-        .quick-actions .action .label {
-            font-size: 10px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            letter-spacing: 0.2px;
-        }
-
-        .quick-actions .action .badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: var(--gold);
-            color: #000;
-            font-size: 8px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: var(--radius-full);
-            border: 1px solid var(--bg-primary);
-            pointer-events: none;
-        }
-
-        .quick-actions .action.ad-action {
-            border-color: var(--gold);
-            background: var(--gold-dim);
-        }
-
-        .quick-actions .action.ad-action .label {
-            color: var(--gold);
-        }
-
-        .quick-actions .action.ad-action:active {
-            background: #f5a62344;
-        }
-
-        /* ─── Ad Card ─── */
-        .ad-card {
-            background: linear-gradient(145deg, #1c1c1e, #141414);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin: 12px 0 20px;
-            border: 1px solid var(--gold);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ad-card::before {
-            content: '💰';
-            position: absolute;
-            top: -30px;
-            right: -20px;
-            font-size: 80px;
-            opacity: 0.08;
-            transform: rotate(15deg);
-        }
-
-        .ad-card .title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--gold);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .ad-card .subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin: 4px 0 14px;
-        }
-
-        .ad-card .reward-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .ad-card .reward-amount {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--gold);
-        }
-
-        .ad-card .reward-amount small {
-            font-size: 16px;
-            font-weight: 400;
-            color: var(--text-secondary);
-        }
-
-        .ad-card .cooldown {
-            font-size: 12px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .btn-ad {
-            background: var(--gold);
-            color: #000;
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius-full);
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-family: inherit;
-            min-width: 140px;
-            justify-content: center;
-        }
-
-        .btn-ad:active {
-            transform: scale(0.95);
-        }
-
-        .btn-ad:disabled {
-            opacity: 0.5;
-            pointer-events: none;
-            filter: grayscale(0.4);
-        }
-
-        .btn-ad .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #00000033;
-            border-top-color: #000;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .ad-stats {
-            display: flex;
-            gap: 16px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .ad-stats .stat {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .ad-stats .stat strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        /* ─── Section Header ─── */
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 20px 0 12px;
-        }
-
-        .section-header h3 {
-            font-size: 17px;
-            font-weight: 600;
-        }
-
-        .section-header a {
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        /* ─── Transaction List ─── */
-        .transaction-list {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 14px;
-            background: var(--bg-card);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: background var(--transition);
-        }
-
-        .transaction-item:active {
-            background: var(--bg-input);
-        }
-
-        .transaction-item .icon {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .transaction-item .icon.green {
-            background: var(--accent-dim);
-            color: var(--accent);
-        }
-        .transaction-item .icon.red {
-            background: #ff3b3022;
-            color: var(--red);
-        }
-        .transaction-item .icon.orange {
-            background: #ff950022;
-            color: var(--orange);
-        }
-        .transaction-item .icon.blue {
-            background: #007aff22;
-            color: var(--blue);
-        }
-        .transaction-item .icon.gold {
-            background: var(--gold-dim);
-            color: var(--gold);
-        }
-
-        .transaction-item .info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .transaction-item .info .name {
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .transaction-item .info .desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .transaction-item .amount {
-            font-weight: 600;
-            font-size: 15px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .transaction-item .amount.positive {
-            color: var(--accent);
-        }
-        .transaction-item .amount.negative {
-            color: var(--red);
-        }
-        .transaction-item .amount.gold {
-            color: var(--gold);
-        }
-
-        /* ─── Forms ─── */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-size: 16px;
-            font-family: inherit;
-            transition: border var(--transition);
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-dim);
-        }
-
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: var(--text-muted);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group .input-hint {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        /* ─── Buttons ─── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 28px;
-            border: none;
-            border-radius: var(--radius-full);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition);
-            width: 100%;
-            font-family: inherit;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn:active {
-            transform: scale(0.97);
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-        }
-
-        .btn-primary:active {
-            background: #00c92e;
-        }
-
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:active {
-            background: var(--bg-input);
-        }
-
-        .btn-danger {
-            background: var(--red);
-            color: #fff;
-        }
-
-        .btn-danger:active {
-            background: #e0352b;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .btn .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #00000033;
-            border-top-color: #000;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        /* ─── Back Button ─── */
-        .back-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 0 12px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 500;
-            transition: color var(--transition);
-            background: none;
-            border: none;
-            font-family: inherit;
-        }
-
-        .back-row:active {
-            color: var(--text-primary);
-        }
-
-        .back-row .arrow {
-            font-size: 20px;
-            line-height: 1;
-        }
-
-        /* ─── Toast ─── */
-        .toast {
-            position: fixed;
-            bottom: calc(var(--safe-bottom) + 100px);
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 14px 24px;
-            border-radius: var(--radius-full);
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: var(--shadow);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 999;
-            pointer-events: none;
-            max-width: 90%;
-            text-align: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.success {
-            border-color: var(--accent);
-        }
-        .toast.error {
-            border-color: var(--red);
-        }
-        .toast.gold {
-            border-color: var(--gold);
-        }
-
-        /* ─── Bottom Navigation ─── */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0 var(--safe-bottom);
-            z-index: 100;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background: rgba(10, 10, 10, 0.92);
-        }
-
-        .bottom-nav .tab {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            padding: 4px 8px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 10px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: color var(--transition);
-            font-family: inherit;
-            position: relative;
-            min-width: 48px;
-        }
-
-        .bottom-nav .tab .icon {
-            font-size: 22px;
-            line-height: 1;
-            transition: transform var(--transition);
-        }
-
-        .bottom-nav .tab .label {
-            font-size: 9px;
-            letter-spacing: 0.2px;
-        }
-
-        .bottom-nav .tab.active {
-            color: var(--accent);
-        }
-
-        .bottom-nav .tab.active .icon {
-            transform: scale(1.05);
-        }
-
-        .bottom-nav .tab:active .icon {
-            transform: scale(0.88);
-        }
-
-        .bottom-nav .tab .badge {
-            position: absolute;
-            top: 0;
-            right: -2px;
-            background: var(--gold);
-            color: #000;
-            font-size: 8px;
-            font-weight: 700;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ─── Profile Screen ─── */
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            margin: 0 auto 12px;
-        }
-
-        .profile-name {
-            text-align: center;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .profile-username {
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-        }
-
-        .profile-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin: 12px 0 20px;
-        }
-
-        .profile-stats .stat {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 6px;
-            text-align: center;
-        }
-
-        .profile-stats .stat .number {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .profile-stats .stat .label {
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .profile-stats .stat.gold-stat .number {
-            color: var(--gold);
-        }
-
-        /* ─── Misc ─── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 16px 0;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state .emoji {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        .empty-state .title {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .empty-state .desc {
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        /* ─── Responsive ─── */
-        @media (max-width: 400px) {
-            .balance-card .amount {
-                font-size: 34px;
-            }
-            .quick-actions {
-                gap: 4px;
-            }
-            .quick-actions .action {
-                padding: 8px 2px 6px;
-            }
-            .quick-actions .action .emoji {
-                font-size: 18px;
-            }
-            .quick-actions .action .label {
-                font-size: 8px;
-            }
-            .app-header .logo {
-                font-size: 17px;
-            }
-            .app-header .logo .icon {
-                width: 30px;
-                height: 30px;
-                font-size: 16px;
-            }
-            .profile-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .ad-card .reward-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .btn-ad {
-                width: 100%;
-                min-width: unset;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .quick-actions {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (min-width: 481px) {
-            #app {
-                border-left: 1px solid var(--border);
-                border-right: 1px solid var(--border);
-            }
-            .bottom-nav {
-                border-left: 1px solid var(--border);
-                border-right: 1px solid var(--border);
-            }
-        }
-
-        /* ─── Haptic helper ─── */
-        .haptic:active {
-            transform: scale(0.96);
-        }
-
-        /* ─── Ad loading overlay ─── */
-        .ad-loading {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 16px;
-            backdrop-filter: blur(8px);
-        }
-
-        .ad-loading.show {
-            display: flex;
-        }
-
-        .ad-loading .spinner-big {
-            width: 48px;
-            height: 48px;
-            border: 3px solid var(--border);
-            border-top-color: var(--gold);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .ad-loading .text {
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .ad-loading .text strong {
-            color: var(--gold);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple TMA Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background: #f5f7fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 30px 35px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .sub {
+      color: #64748b;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 180px;
+      font-weight: 500;
+      color: #334155;
+      font-size: 0.9rem;
+    }
+    .input-group input {
+      margin-top: 5px;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: 0.2s;
+      background: #fafcff;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .btn:hover {
+      background: #2563eb;
+      transform: scale(1.01);
+    }
+    .result-area {
+      margin-top: 25px;
+      background: #f8fafc;
+      border-radius: 18px;
+      padding: 18px 22px;
+      border: 1px solid #eef2f6;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .result-area h3 {
+      margin: 0 0 12px 0;
+      font-weight: 500;
+      color: #1e293b;
+      font-size: 1.1rem;
+    }
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #e9edf2;
+      font-size: 0.95rem;
+    }
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    .index {
+      color: #64748b;
+      font-weight: 400;
+    }
+    .value {
+      font-weight: 500;
+      color: #0f172a;
+    }
+    .empty-msg {
+      color: #94a3b8;
+      font-style: italic;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .error {
+      color: #ef4444;
+      background: #fee2e2;
+      padding: 10px 16px;
+      border-radius: 12px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
+<div class="card">
+  <h1>📈 TMA Calculator</h1>
+  <div class="sub">Triangular Moving Average = SMA of SMA</div>
 
-    <!-- ─── Ad Loading Overlay ─── -->
-    <div id="adLoading" class="ad-loading">
-        <div class="spinner-big"></div>
-        <div class="text">Loading <strong>reward ad</strong>…</div>
-        <div style="font-size:12px;color:var(--text-muted);">Please wait a moment</div>
-    </div>
+  <div class="input-group">
+    <label>
+      Prices (comma‑separated)
+      <input type="text" id="pricesInput" value="22,24,23,25,26,27,28,30,29,31" placeholder="e.g. 22,24,23,25">
+    </label>
+    <label>
+      Window (n)
+      <input type="number" id="windowInput" value="3" min="2" step="1">
+    </label>
+  </div>
 
-    <!-- ─── Toast ─── -->
-    <div id="toast" class="toast"></div>
+  <button class="btn" id="calcBtn">Calculate TMA</button>
 
-    <!-- ─── App ─── -->
-    <div id="app">
+  <div id="resultArea" class="result-area">
+    <h3>📊 TMA Values</h3>
+    <div id="resultList"></div>
+  </div>
+  <div id="errorMsg" class="error" style="display:none;"></div>
+</div>
 
-        <!-- Status Bar -->
-        <div class="status-bar"></div>
+<script>
+  // ---------- TMA function ----------
+  function tma(data, window) {
+    if (!Array.isArray(data) || data.length === 0 || window < 2) return null;
 
-        <!-- Header -->
-        <header class="app-header">
-            <div class="logo">
-                <div class="icon">$</div>
-                <span>Cash</span>
-            </div>
-            <div class="actions">
-                <button id="notifBtn" aria-label="Notifications">🔔</button>
-                <button id="settingsBtn" aria-label="Settings">⚙️</button>
-            </div>
-        </header>
+    // First SMA
+    const sma1 = [];
+    for (let i = 0; i < data.length; i++) {
+      if (i < window - 1) {
+        sma1.push(null);
+      } else {
+        let sum = 0;
+        for (let j = i - window + 1; j <= i; j++) sum += data[j];
+        sma1.push(sum / window);
+      }
+    }
 
-        <!-- Main Content -->
-        <div class="main-content" id="mainContent">
-
-            <!-- ─── HOME SCREEN ─── -->
-            <div id="screen-home" class="screen active">
-
-                <!-- Balance -->
-                <div class="balance-card">
-                    <div class="label">Total Balance</div>
-                    <div class="amount">
-                        <span class="currency">$</span><span id="balanceDisplay">0.00</span>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:12px;margin-top:2px;position:relative;z-index:1;flex-wrap:wrap;">
-                        <span class="change" id="changeBadge">▲ +0.00%</span>
-                        <span style="font-size:12px;color:var(--text-muted);">this week</span>
-                        <span style="font-size:12px;color:var(--gold);margin-left:auto;" id="adEarnedBadge">💰 +$0.00 from ads</span>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="quick-actions">
-                    <div class="action" data-screen="send">
-                        <span class="emoji">💸</span>
-                        <span class="label">Send</span>
-                    </div>
-                    <div class="action" data-screen="request">
-                        <span class="emoji">📩</span>
-                        <span class="label">Request</span>
-                    </div>
-                    <div class="action" data-screen="history">
-                        <span class="emoji">📋</span>
-                        <span class="label">History</span>
-                    </div>
-                    <div class="action ad-action" id="watchAdAction">
-                        <span class="emoji">🎬</span>
-                        <span class="label">Watch Ad</span>
-                        <span class="badge">+$0.50</span>
-                    </div>
-                    <div class="action" data-screen="profile">
-                        <span class="emoji">👤</span>
-                        <span class="label">Profile</span>
-                    </div>
-                </div>
-
-                <!-- Ad Card (prominent) -->
-                <div class="ad-card" id="adCard">
-                    <div class="title">🎬 Watch & Earn</div>
-                    <div class="subtitle">Watch a short ad and get free money added to your balance instantly</div>
-                    <div class="reward-row">
-                        <div>
-                            <div class="reward-amount">
-                                +$0.50 <small>per ad</small>
-                            </div>
-                            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                                <span id="adCountDisplay">0</span> ads watched today
-                            </div>
-                        </div>
-                        <button class="btn-ad" id="watchAdBtn">
-                            <span>▶</span> Watch Now
-                        </button>
-                    </div>
-                    <div class="ad-stats">
-                        <span class="stat">⏱️ <span id="cooldownDisplay">Ready</span></span>
-                        <span class="stat">💰 Earned: <strong id="totalAdEarned">$0.00</strong></span>
-                    </div>
-                </div>
-
-                <!-- Recent Transactions -->
-                <div class="section-header">
-                    <h3>Recent</h3>
-                    <a href="#" id="viewAllLink">View all →</a>
-                </div>
-                <div class="transaction-list" id="recentTransactions">
-                    <!-- rendered by JS -->
-                </div>
-            </div>
-
-            <!-- ─── SEND SCREEN ─── -->
-            <div id="screen-send" class="screen">
-                <button class="back-row" data-back>
-                    <span class="arrow">←</span> Back
-                </button>
-                <h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Send Money</h2>
-                <p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px;">Send instantly to anyone</p>
-
-                <div class="form-group">
-                    <label>Recipient</label>
-                    <input type="text" id="sendRecipient" placeholder="Username, phone, or email" />
-                </div>
-
-                <div class="form-group">
-                    <label>Amount</label>
-                    <input type="number" id="sendAmount" placeholder="0.00" step="0.01" min="0.01" />
-                    <div class="input-hint">Min: $0.01 · Max: $10,000.00</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Note <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-                    <input type="text" id="sendNote" placeholder="What's this for?" maxlength="50" />
-                </div>
-
-                <button class="btn btn-primary" id="sendBtn">Send Money</button>
-            </div>
-
-            <!-- ─── REQUEST SCREEN ─── -->
-            <div id="screen-request" class="screen">
-                <button class="back-row" data-back>
-                    <span class="arrow">←</span> Back
-                </button>
-                <h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Request Money</h2>
-                <p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px;">Request from anyone</p>
-
-                <div class="form-group">
-                    <label>From</label>
-                    <input type="text" id="requestFrom" placeholder="Username, phone, or email" />
-                </div>
-
-                <div class="form-group">
-                    <label>Amount</label>
-                    <input type="number" id="requestAmount" placeholder="0.00" step="0.01" min="0.01" />
-                </div>
-
-                <div class="form-group">
-                    <label>Note <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-                    <input type="text" id="requestNote" placeholder="What's this for?" maxlength="50" />
-                </div>
-
-                <button class="btn btn-primary" id="requestBtn">Request Money</button>
-            </div>
-
-            <!-- ─── HISTORY SCREEN ─── -->
-            <div id="screen-history" class="screen">
-                <button class="back-row" data-back>
-                    <span class="arrow">←</span> Back
-                </button>
-                <h2 style="font-size:22px;font-weight:700;margin-bottom:4px;">Transaction History</h2>
-                <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">All your transactions</p>
-
-                <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
-                    <button class="filter-btn" data-filter="all" style="background:var(--accent);color:#000;border:none;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;">All</button>
-                    <button class="filter-btn" data-filter="received" style="background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;">Received</button>
-                    <button class="filter-btn" data-filter="sent" style="background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;">Sent</button>
-                    <button class="filter-btn" data-filter="requested" style="background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;">Requests</button>
-                    <button class="filter-btn" data-filter="ad" style="background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);padding:6px 14px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;">🎬 Ads</button>
-                </div>
-
-                <div class="transaction-list" id="allTransactions">
-                    <!-- rendered by JS -->
-                </div>
-            </div>
-
-            <!-- ─── PROFILE SCREEN ─── -->
-            <div id="screen-profile" class="screen">
-                <button class="back-row" data-back>
-                    <span class="arrow">←</span> Back
-                </button>
-
-                <div class="profile-avatar">👤</div>
-                <div class="profile-name" id="profileName">Alex Rivera</div>
-                <div class="profile-username" id="profileUsername">@alex_cash</div>
-
-                <div class="profile-stats">
-                    <div class="stat">
-                        <div class="number" id="statTransactions">0</div>
-                        <div class="label">Transactions</div>
-                    </div>
-                    <div class="stat">
-                        <div class="number" id="statSent">$0</div>
-                        <div class="label">Sent</div>
-                    </div>
-                    <div class="stat">
-                        <div class="number" id="statReceived">$0</div>
-                        <div class="label">Received</div>
-                    </div>
-                    <div class="stat gold-stat">
-                        <div class="number" id="statAdEarned">$0</div>
-                        <div class="label">🎬 Ad Earnings</div>
-                    </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <button class="btn btn-secondary" style="margin-bottom:10px;" id="shareProfileBtn">📤 Share Profile</button>
-                <button class="btn btn-secondary" style="margin-bottom:10px;" id="resetDataBtn">🔄 Reset Demo Data</button>
-                <button class="btn btn-danger" id="logoutBtn">🚪 Log Out</button>
-
-                <p style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px;">Cash App TMA v2.0 · Earn with Ads</p>
-            </div>
-
-        </div>
-
-        <!-- ─── Bottom Navigation ─── -->
-        <nav class="bottom-nav" id="bottomNav">
-            <button class="tab active" data-tab="home">
-                <span class="icon">🏠</span>
-                <span class="label">Home</span>
-            </button>
-            <button class="tab" data-tab="send">
-                <span class="icon">💸</span>
-                <span class="label">Send</span>
-            </button>
-            <button class="tab" data-tab="request">
-                <span class="icon">📩</span>
-                <span class="label">Request</span>
-            </button>
-            <button class="tab" data-tab="history">
-                <span class="icon">📋</span>
-                <span class="label">History</span>
-                <span class="badge" id="adBadgeNav" style="display:none;">✦</span>
-            </button>
-            <button class="tab" data-tab="profile">
-                <span class="icon">👤</span>
-                <span class="label">Profile</span>
-            </button>
-        </nav>
-
-    </div>
-
-    <script>
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  TELEGRAM WEBAPP INIT
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        let tg = window.Telegram?.WebApp;
-
-        try {
-            if (tg) {
-                tg.ready();
-                tg.expand();
-                tg.enableClosingConfirmation();
-                tg.setBackgroundColor('#0a0a0a');
-                tg.setHeaderColor('#0a0a0a');
-            }
-        } catch (_) { /* ignore */ }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  STATE
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        const STORAGE_KEY = 'cashapp_tma_data_v2';
-
-        const defaultState = {
-            balance: 1247.83,
-            transactions: [
-                { id: 't1', type: 'received', from: 'Sarah K.', amount: 45.00, note: 'Coffee ☕', date: Date.now() -
-                        1000 * 60 * 15 },
-                { id: 't2', type: 'sent', from: 'You', to: 'Mike R.', amount: 12.50, note: 'Lunch 🍜', date: Date
-                    .now() - 1000 * 60 * 60 * 2 },
-                { id: 't3', type: 'received', from: 'Emma W.', amount: 120.00, note: 'Design work', date: Date.now() -
-                        1000 * 60 * 60 * 5 },
-                { id: 't4', type: 'sent', from: 'You', to: 'Jake P.', amount: 8.75, note: 'Split bill', date: Date
-                    .now() - 1000 * 60 * 60 * 24 },
-                { id: 't5', type: 'received', from: 'Lisa M.', amount: 200.00, note: 'Freelance payment', date: Date
-                    .now() - 1000 * 60 * 60 * 48 },
-                { id: 't6', type: 'requested', from: 'David C.', amount: 30.00, note: 'Dinner 🍕', date: Date.now() -
-                    1000 * 60 * 60 * 72 },
-                { id: 't7', type: 'sent', from: 'You', to: 'Anna B.', amount: 5.00, note: '🎁', date: Date.now() -
-                    1000 * 60 * 60 * 96 },
-            ],
-            profile: {
-                name: 'Alex Rivera',
-                username: '@alex_cash',
-                avatar: '👤',
-            },
-            // Ad rewards state
-            adRewards: {
-                totalEarned: 0,
-                countToday: 0,
-                lastWatchTime: 0,
-                cooldownSeconds: 30,
-                dayStart: new Date().setHours(0, 0, 0, 0),
-            },
-        };
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  HELPERS
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function loadState() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) {
-                    const data = JSON.parse(raw);
-                    // ensure transactions are sorted
-                    if (data.transactions) {
-                        data.transactions.sort((a, b) => b.date - a.date);
-                    }
-                    // ensure adRewards exists
-                    if (!data.adRewards) {
-                        data.adRewards = JSON.parse(JSON.stringify(defaultState.adRewards));
-                    }
-                    // reset daily count if new day
-                    const today = new Date().setHours(0, 0, 0, 0);
-                    if (data.adRewards.dayStart !== today) {
-                        data.adRewards.countToday = 0;
-                        data.adRewards.dayStart = today;
-                    }
-                    return data;
-                }
-            } catch (_) { /* ignore */ }
-            return JSON.parse(JSON.stringify(defaultState));
+    // Second SMA on sma1
+    const tmaVals = [];
+    for (let i = 0; i < sma1.length; i++) {
+      if (i < window - 1 || sma1[i] === null) {
+        tmaVals.push(null);
+      } else {
+        let validCount = 0;
+        let sum = 0;
+        for (let j = i - window + 1; j <= i; j++) {
+          if (sma1[j] !== null) {
+            sum += sma1[j];
+            validCount++;
+          }
         }
-
-        function saveState(state) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            } catch (_) { /* ignore */ }
-        }
-
-        function generateId() {
-            return 't' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-        }
-
-        function formatCurrency(amount) {
-            return '$' + Number(amount).toFixed(2);
-        }
-
-        function formatDate(ts) {
-            const d = new Date(ts);
-            const now = new Date();
-            const diff = now - d;
-            if (diff < 60 * 1000) return 'Just now';
-            if (diff < 60 * 60 * 1000) {
-                const m = Math.floor(diff / (60 * 1000));
-                return m + 'm ago';
-            }
-            if (diff < 24 * 60 * 60 * 1000) {
-                const h = Math.floor(diff / (60 * 60 * 1000));
-                return h + 'h ago';
-            }
-            if (diff < 7 * 24 * 60 * 60 * 1000) {
-                const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-                return days + 'd ago';
-            }
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-
-        function getTimeRemaining(cooldownUntil) {
-            const now = Date.now();
-            const diff = cooldownUntil - now;
-            if (diff <= 0) return 0;
-            return Math.ceil(diff / 1000);
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  TOAST
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        let toastTimeout = null;
-
-        function showToast(message, type = 'success') {
-            const el = document.getElementById('toast');
-            el.textContent = message;
-            el.className = 'toast ' + type;
-            void el.offsetWidth;
-            el.classList.add('show');
-
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                el.classList.remove('show');
-            }, 3000);
-
-            try { tg?.HapticFeedback?.notificationOccurred(type === 'error' ? 'error' : 'success'); } catch (_) {}
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  APP STATE
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        let state = loadState();
-        let currentScreen = 'home';
-        let currentFilter = 'all';
-        let adCooldownTimer = null;
-        let isAdLoading = false;
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  AD REWARD SYSTEM
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        const AD_REWARD_AMOUNT = 0.50;
-        const COOLDOWN_SECONDS = 30;
-
-        function canWatchAd() {
-            const now = Date.now();
-            const cooldownUntil = state.adRewards.lastWatchTime + (state.adRewards.cooldownSeconds * 1000);
-            return now >= cooldownUntil && !isAdLoading;
-        }
-
-        function getCooldownRemaining() {
-            const now = Date.now();
-            const cooldownUntil = state.adRewards.lastWatchTime + (state.adRewards.cooldownSeconds * 1000);
-            return getTimeRemaining(cooldownUntil);
-        }
-
-        function updateAdUI() {
-            const btn = document.getElementById('watchAdBtn');
-            const cooldownEl = document.getElementById('cooldownDisplay');
-            const countEl = document.getElementById('adCountDisplay');
-            const earnedEl = document.getElementById('totalAdEarned');
-            const badgeEl = document.getElementById('adEarnedBadge');
-            const navBadge = document.getElementById('adBadgeNav');
-
-            // Update count
-            if (countEl) countEl.textContent = state.adRewards.countToday;
-            if (earnedEl) earnedEl.textContent = formatCurrency(state.adRewards.totalEarned);
-            if (badgeEl) badgeEl.textContent = '💰 +' + formatCurrency(state.adRewards.totalEarned) + ' from ads';
-
-            // Show nav badge if any ad earnings
-            if (navBadge) {
-                navBadge.style.display = state.adRewards.totalEarned > 0 ? 'flex' : 'none';
-                navBadge.textContent = '✦';
-            }
-
-            // Update button state
-            const canWatch = canWatchAd();
-            if (btn) {
-                btn.disabled = !canWatch;
-                if (canWatch) {
-                    btn.innerHTML = '<span>▶</span> Watch Now';
-                    btn.style.opacity = '1';
-                } else {
-                    const remaining = getCooldownRemaining();
-                    btn.innerHTML = `<span>⏳</span> Wait ${remaining}s`;
-                    btn.style.opacity = '0.7';
-                }
-            }
-
-            // Update cooldown display
-            if (cooldownEl) {
-                if (canWatch) {
-                    cooldownEl.textContent = 'Ready to watch!';
-                    cooldownEl.style.color = 'var(--gold)';
-                } else {
-                    const remaining = getCooldownRemaining();
-                    cooldownEl.textContent = `⏱️ ${remaining}s cooldown`;
-                    cooldownEl.style.color = 'var(--text-muted)';
-                }
-            }
-
-            // Update stats in profile
-            const statAd = document.getElementById('statAdEarned');
-            if (statAd) statAd.textContent = formatCurrency(state.adRewards.totalEarned);
-
-            // Update ad count in profile stats
-            // We'll handle this in renderProfileStats
-        }
-
-        function watchAd() {
-            if (!canWatchAd()) {
-                showToast('Please wait for cooldown', 'error');
-                return;
-            }
-
-            // Check if the ad SDK is available
-            if (typeof window.showRewardAd !== 'function') {
-                showToast('Ad SDK not loaded. Please try again.', 'error');
-                console.warn('showRewardAd not available');
-                return;
-            }
-
-            isAdLoading = true;
-            const loadingEl = document.getElementById('adLoading');
-            if (loadingEl) loadingEl.classList.add('show');
-
-            // Disable button
-            const btn = document.getElementById('watchAdBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner"></span> Loading…';
-            }
-
-            try {
-                // Call the ad SDK
-                window.showRewardAd(function(res) {
-                    // Hide loading
-                    if (loadingEl) loadingEl.classList.remove('show');
-                    isAdLoading = false;
-
-                    // Log the response for debugging
-                    console.log('Ad response:', res);
-
-                    // Check if the ad was completed or closed
-                    // Both "completed" and "closed" grant the reward per user's spec
-                    if (res.status === 'completed' || res.status === 'closed') {
-                        // Grant reward
-                        grantAdReward();
-                    } else {
-                        // Other status (e.g., "error", "cancelled")
-                        showToast('Ad was not completed. Try again.', 'error');
-                        updateAdUI();
-                    }
-                });
-            } catch (err) {
-                console.error('Error showing ad:', err);
-                if (loadingEl) loadingEl.classList.remove('show');
-                isAdLoading = false;
-                showToast('Failed to load ad. Please try again.', 'error');
-                updateAdUI();
-            }
-        }
-
-        function grantAdReward() {
-            // Add reward to balance
-            state.balance += AD_REWARD_AMOUNT;
-            state.adRewards.totalEarned += AD_REWARD_AMOUNT;
-            state.adRewards.countToday += 1;
-            state.adRewards.lastWatchTime = Date.now();
-
-            // Add transaction entry
-            state.transactions.unshift({
-                id: generateId(),
-                type: 'ad',
-                from: 'Reward Ad',
-                amount: AD_REWARD_AMOUNT,
-                note: '🎬 Watched ad · +$' + AD_REWARD_AMOUNT.toFixed(2),
-                date: Date.now(),
-                isAd: true,
-            });
-
-            saveState(state);
-
-            // Show success
-            showToast('🎉 You earned ' + formatCurrency(AD_REWARD_AMOUNT) + ' from watching an ad!', 'gold');
-
-            // Update UI
-            renderAll();
-            updateAdUI();
-
-            // Haptic feedback
-            try { tg?.HapticFeedback?.impactOccurred('medium'); } catch (_) {}
-
-            // Start cooldown timer
-            startCooldownTimer();
-
-            // Refresh the ad UI after cooldown
-            setTimeout(() => updateAdUI(), 1000);
-        }
-
-        function startCooldownTimer() {
-            clearInterval(adCooldownTimer);
-            adCooldownTimer = setInterval(() => {
-                const remaining = getCooldownRemaining();
-                if (remaining <= 0) {
-                    clearInterval(adCooldownTimer);
-                    updateAdUI();
-                } else {
-                    // Update the cooldown display
-                    const cooldownEl = document.getElementById('cooldownDisplay');
-                    if (cooldownEl) {
-                        cooldownEl.textContent = `⏱️ ${remaining}s cooldown`;
-                        cooldownEl.style.color = 'var(--text-muted)';
-                    }
-                    const btn = document.getElementById('watchAdBtn');
-                    if (btn && btn.disabled) {
-                        btn.innerHTML = `<span>⏳</span> Wait ${remaining}s`;
-                    }
-                }
-            }, 1000);
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  RENDER
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function renderAll() {
-            renderBalance();
-            renderRecentTransactions();
-            renderAllTransactions();
-            renderProfileStats();
-            updateNav();
-            updateAdUI();
-        }
-
-        function renderBalance() {
-            const el = document.getElementById('balanceDisplay');
-            if (el) el.textContent = state.balance.toFixed(2);
-
-            const badge = document.getElementById('changeBadge');
-            if (badge) {
-                const change = ((state.balance - 1000) / 1000 * 100).toFixed(1);
-                if (parseFloat(change) >= 0) {
-                    badge.textContent = '▲ +' + change + '%';
-                    badge.className = 'change';
-                } else {
-                    badge.textContent = '▼ ' + change + '%';
-                    badge.className = 'change negative';
-                }
-            }
-        }
-
-        function renderRecentTransactions() {
-            const container = document.getElementById('recentTransactions');
-            if (!container) return;
-            const recent = state.transactions.slice(0, 4);
-            if (recent.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="emoji">📭</div>
-                        <div class="title">No transactions yet</div>
-                        <div class="desc">Send, receive, or watch ads to get started</div>
-                    </div>
-                `;
-                return;
-            }
-            container.innerHTML = recent.map(tx => transactionItemHTML(tx)).join('');
-        }
-
-        function renderAllTransactions() {
-            const container = document.getElementById('allTransactions');
-            if (!container) return;
-            let list = state.transactions;
-            if (currentFilter === 'received') {
-                list = list.filter(tx => tx.type === 'received');
-            } else if (currentFilter === 'sent') {
-                list = list.filter(tx => tx.type === 'sent');
-            } else if (currentFilter === 'requested') {
-                list = list.filter(tx => tx.type === 'requested');
-            } else if (currentFilter === 'ad') {
-                list = list.filter(tx => tx.type === 'ad' || tx.isAd === true);
-            }
-            if (list.length === 0) {
-                const filterName = currentFilter === 'ad' ? 'ad earnings' : currentFilter;
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="emoji">🔍</div>
-                        <div class="title">No ${currentFilter !== 'all' ? filterName : ''} transactions</div>
-                        <div class="desc">${currentFilter === 'ad' ? 'Watch an ad to start earning!' : 'Try a different filter'}</div>
-                    </div>
-                `;
-                return;
-            }
-            container.innerHTML = list.map(tx => transactionItemHTML(tx)).join('');
-        }
-
-        function transactionItemHTML(tx) {
-            const isAd = tx.type === 'ad' || tx.isAd === true;
-            const isPositive = tx.type === 'received' || isAd;
-            const isRequest = tx.type === 'requested';
-            const sign = isPositive ? '+' : (isRequest ? '↻ ' : '−');
-            const amountClass = isAd ? 'gold' : (isPositive ? 'positive' : (isRequest ? 'orange' : 'negative'));
-            let label, name, iconEmoji, iconClass;
-
-            if (isAd) {
-                label = 'Ad Reward';
-                name = '🎬 Ad Earnings';
-                iconEmoji = '💰';
-                iconClass = 'gold';
-            } else if (isPositive) {
-                label = 'Received from';
-                name = tx.from;
-                iconEmoji = '📥';
-                iconClass = 'green';
-            } else if (isRequest) {
-                label = 'Requested from';
-                name = tx.from;
-                iconEmoji = '📩';
-                iconClass = 'orange';
-            } else {
-                label = 'Sent to';
-                name = tx.to;
-                iconEmoji = '💸';
-                iconClass = 'red';
-            }
-
-            const displayName = isAd ? '🎬 Ad Reward' : (name || 'Unknown');
-
-            return `
-                <div class="transaction-item" data-id="${tx.id}">
-                    <div class="icon ${iconClass}">${iconEmoji}</div>
-                    <div class="info">
-                        <div class="name">${displayName}</div>
-                        <div class="desc">${tx.note || 'No note'} · ${formatDate(tx.date)}</div>
-                    </div>
-                    <div class="amount ${amountClass}">${sign}${formatCurrency(tx.amount)}</div>
-                </div>
-            `;
-        }
-
-        function renderProfileStats() {
-            const total = state.transactions.length;
-            const sent = state.transactions.filter(tx => tx.type === 'sent').reduce((sum, tx) => sum + tx.amount, 0);
-            const received = state.transactions.filter(tx => tx.type === 'received').reduce((sum, tx) => sum + tx.amount,
-            0);
-
-            document.getElementById('statTransactions').textContent = total;
-            document.getElementById('statSent').textContent = formatCurrency(sent);
-            document.getElementById('statReceived').textContent = formatCurrency(received);
-            document.getElementById('statAdEarned').textContent = formatCurrency(state.adRewards.totalEarned);
-            document.getElementById('profileName').textContent = state.profile.name;
-            document.getElementById('profileUsername').textContent = state.profile.username;
-        }
-
-        function updateNav() {
-            document.querySelectorAll('.bottom-nav .tab').forEach(tab => {
-                const tabName = tab.dataset.tab;
-                tab.classList.toggle('active', tabName === currentScreen);
-            });
-        }
-
-        function updateFilterButtons() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                const filter = btn.dataset.filter;
-                const isActive = filter === currentFilter;
-                if (isActive) {
-                    btn.style.background = 'var(--accent)';
-                    btn.style.color = '#000';
-                    btn.style.border = 'none';
-                } else {
-                    btn.style.background = 'var(--bg-card)';
-                    btn.style.color = 'var(--text-secondary)';
-                    btn.style.border = '1px solid var(--border)';
-                }
-            });
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  NAVIGATION
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function navigateTo(screen) {
-            document.activeElement?.blur();
-
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-
-            const target = document.getElementById('screen-' + screen);
-            if (target) {
-                target.classList.add('active');
-                target.style.animation = 'none';
-                void target.offsetWidth;
-                target.style.animation = '';
-            }
-
-            currentScreen = screen;
-            updateNav();
-
-            document.getElementById('mainContent').scrollTop = 0;
-
-            try { tg?.HapticFeedback?.impactOccurred('light'); } catch (_) {}
-
-            if (screen === 'history') {
-                updateFilterButtons();
-                renderAllTransactions();
-            }
-            if (screen === 'home') {
-                renderRecentTransactions();
-                renderBalance();
-                updateAdUI();
-            }
-            if (screen === 'profile') {
-                renderProfileStats();
-            }
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  ACTIONS
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function sendMoney() {
-            const recipient = document.getElementById('sendRecipient').value.trim();
-            const amount = parseFloat(document.getElementById('sendAmount').value);
-            const note = document.getElementById('sendNote').value.trim();
-
-            if (!recipient) {
-                showToast('Please enter a recipient', 'error');
-                return;
-            }
-            if (!amount || amount <= 0) {
-                showToast('Please enter a valid amount', 'error');
-                return;
-            }
-            if (amount > state.balance) {
-                showToast('Insufficient balance', 'error');
-                return;
-            }
-            if (amount > 10000) {
-                showToast('Amount exceeds maximum ($10,000)', 'error');
-                return;
-            }
-
-            state.balance -= amount;
-            state.transactions.unshift({
-                id: generateId(),
-                type: 'sent',
-                from: 'You',
-                to: recipient,
-                amount: amount,
-                note: note || 'No note',
-                date: Date.now(),
-            });
-
-            saveState(state);
-            renderAll();
-            showToast('Sent ' + formatCurrency(amount) + ' to ' + recipient, 'success');
-
-            document.getElementById('sendRecipient').value = '';
-            document.getElementById('sendAmount').value = '';
-            document.getElementById('sendNote').value = '';
-
-            setTimeout(() => navigateTo('home'), 600);
-        }
-
-        function requestMoney() {
-            const from = document.getElementById('requestFrom').value.trim();
-            const amount = parseFloat(document.getElementById('requestAmount').value);
-            const note = document.getElementById('requestNote').value.trim();
-
-            if (!from) {
-                showToast('Please enter who to request from', 'error');
-                return;
-            }
-            if (!amount || amount <= 0) {
-                showToast('Please enter a valid amount', 'error');
-                return;
-            }
-
-            state.transactions.unshift({
-                id: generateId(),
-                type: 'requested',
-                from: from,
-                amount: amount,
-                note: note || 'No note',
-                date: Date.now(),
-            });
-
-            saveState(state);
-            renderAll();
-            showToast('Requested ' + formatCurrency(amount) + ' from ' + from, 'success');
-
-            document.getElementById('requestFrom').value = '';
-            document.getElementById('requestAmount').value = '';
-            document.getElementById('requestNote').value = '';
-
-            setTimeout(() => navigateTo('home'), 600);
-        }
-
-        function resetDemoData() {
-            if (confirm('Reset all demo data?')) {
-                state = JSON.parse(JSON.stringify(defaultState));
-                // Reset daily counter
-                state.adRewards.dayStart = new Date().setHours(0, 0, 0, 0);
-                saveState(state);
-                renderAll();
-                navigateTo('home');
-                showToast('Demo data reset', 'success');
-                clearInterval(adCooldownTimer);
-                updateAdUI();
-            }
-        }
-
-        function logout() {
-            if (confirm('Log out?')) {
-                state = JSON.parse(JSON.stringify(defaultState));
-                state.adRewards.dayStart = new Date().setHours(0, 0, 0, 0);
-                saveState(state);
-                renderAll();
-                navigateTo('home');
-                showToast('Logged out', 'success');
-                clearInterval(adCooldownTimer);
-                updateAdUI();
-                try { tg?.close(); } catch (_) {}
-            }
-        }
-
-        function shareProfile() {
-            const text =
-                `💰 Cash App Profile\n${state.profile.name} (${state.profile.username})\nBalance: ${formatCurrency(state.balance)}\n🎬 Ad Earnings: ${formatCurrency(state.adRewards.totalEarned)}\n\nSend, request, or watch ads to earn!`;
-            try {
-                if (tg) {
-                    tg.sendData(JSON.stringify({ action: 'share_profile', text }));
-                    showToast('Profile shared!', 'success');
-                } else {
-                    navigator.clipboard?.writeText(text).then(() => {
-                        showToast('Copied to clipboard!', 'success');
-                    }).catch(() => {
-                        showToast(text, 'success');
-                    });
-                }
-            } catch (_) {
-                showToast(text, 'success');
-            }
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  EVENT BINDING
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function init() {
-            // Reset daily counter if needed
-            const today = new Date().setHours(0, 0, 0, 0);
-            if (state.adRewards.dayStart !== today) {
-                state.adRewards.countToday = 0;
-                state.adRewards.dayStart = today;
-                saveState(state);
-            }
-
-            renderAll();
-
-            // ── Bottom Nav ──
-            document.querySelectorAll('.bottom-nav .tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const screen = tab.dataset.tab;
-                    if (screen === currentScreen) return;
-                    navigateTo(screen);
-                });
-            });
-
-            // ── Quick Actions ──
-            document.querySelectorAll('.quick-actions .action').forEach(el => {
-                el.addEventListener('click', () => {
-                    const screen = el.dataset.screen;
-                    if (screen) navigateTo(screen);
-                });
-            });
-
-            // ── Watch Ad Action (quick action) ──
-            document.getElementById('watchAdAction')?.addEventListener('click', watchAd);
-
-            // ── Watch Ad Button ──
-            document.getElementById('watchAdBtn')?.addEventListener('click', watchAd);
-
-            // ── Back buttons ──
-            document.querySelectorAll('[data-back]').forEach(el => {
-                el.addEventListener('click', () => {
-                    navigateTo('home');
-                });
-            });
-
-            // ── View All Link ──
-            document.getElementById('viewAllLink')?.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('history');
-            });
-
-            // ── Send Button ──
-            document.getElementById('sendBtn')?.addEventListener('click', sendMoney);
-
-            // ── Request Button ──
-            document.getElementById('requestBtn')?.addEventListener('click', requestMoney);
-
-            // ── Filter Buttons ──
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    currentFilter = btn.dataset.filter;
-                    updateFilterButtons();
-                    renderAllTransactions();
-                });
-            });
-
-            // ── Profile Actions ──
-            document.getElementById('resetDataBtn')?.addEventListener('click', resetDemoData);
-            document.getElementById('logoutBtn')?.addEventListener('click', logout);
-            document.getElementById('shareProfileBtn')?.addEventListener('click', shareProfile);
-
-            // ── Settings / Notif ──
-            document.getElementById('settingsBtn')?.addEventListener('click', () => {
-                showToast('⚙️ Settings coming soon', 'success');
-            });
-            document.getElementById('notifBtn')?.addEventListener('click', () => {
-                const adEarned = state.adRewards.totalEarned;
-                if (adEarned > 0) {
-                    showToast(`💰 You've earned ${formatCurrency(adEarned)} from ads!`, 'gold');
-                } else {
-                    showToast('🔔 No new notifications', 'success');
-                }
-            });
-
-            // ── Keyboard: Enter to submit ──
-            document.getElementById('sendAmount')?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') sendMoney();
-            });
-            document.getElementById('requestAmount')?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') requestMoney();
-            });
-
-            // ── Telegram back button ──
-            try {
-                if (tg) {
-                    tg.BackButton.onClick(() => {
-                        if (currentScreen !== 'home') {
-                            navigateTo('home');
-                            tg.BackButton.hide();
-                        }
-                    });
-                    const observer = new MutationObserver(() => {
-                        if (currentScreen !== 'home') {
-                            tg.BackButton.show();
-                        } else {
-                            tg.BackButton.hide();
-                        }
-                    });
-                    observer.observe(document.querySelector('.screen.active') || document.body, { attributes: true,
-                        attributeFilter: ['class'] });
-                }
-            } catch (_) {}
-
-            // ── Click on transaction items ──
-            document.addEventListener('click', (e) => {
-                const item = e.target.closest('.transaction-item');
-                if (item) {
-                    const id = item.dataset.id;
-                    const tx = state.transactions.find(t => t.id === id);
-                    if (tx) {
-                        const isAd = tx.type === 'ad' || tx.isAd === true;
-                        const detail = `${isAd ? '🎬 Ad Reward' : tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}\n` +
-                            `Amount: ${formatCurrency(tx.amount)}\n` +
-                            `${isAd ? 'From' : tx.type === 'sent' ? 'To' : 'From'}: ${isAd ? 'Reward Ad' : tx.type === 'sent' ? tx.to : tx.from}\n` +
-                            `Note: ${tx.note || '—'}\n` +
-                            `Date: ${new Date(tx.date).toLocaleString()}`;
-                        showToast(detail, isAd ? 'gold' : 'success');
-                        try { tg?.HapticFeedback?.impactOccurred('medium'); } catch (_) {}
-                    }
-                }
-            });
-
-            // ── Safe areas ──
-            const updateSafeAreas = () => {
-                const safeBottom = window.innerHeight - document.documentElement.clientHeight;
-                document.documentElement.style.setProperty('--safe-bottom', Math.max(safeBottom, 20) + 'px');
-            };
-            updateSafeAreas();
-            window.addEventListener('resize', updateSafeAreas);
-
-            // ── Start cooldown timer if needed ──
-            if (!canWatchAd()) {
-                startCooldownTimer();
-            }
-
-            console.log('💰 Cash App TMA v2.0 with Ad Rewards ready');
-            console.log('📊 Ad SDK available:', typeof window.showRewardAd === 'function');
-        }
-
-        // ── Init ──
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
+        if (validCount === window) {
+          tmaVals.push(sum / window);
         } else {
-            init();
+          tmaVals.push(null);
         }
-    </script>
+      }
+    }
+    return tmaVals;
+  }
 
+  // ---------- UI ----------
+  const pricesInput = document.getElementById('pricesInput');
+  const windowInput = document.getElementById('windowInput');
+  const calcBtn = document.getElementById('calcBtn');
+  const resultList = document.getElementById('resultList');
+  const errorMsg = document.getElementById('errorMsg');
+
+  function renderResult(prices, window, tmaValues) {
+    errorMsg.style.display = 'none';
+    resultList.innerHTML = '';
+
+    if (!tmaValues || tmaValues.length === 0) {
+      resultList.innerHTML = '<div class="empty-msg">No data to display</div>';
+      return;
+    }
+
+    // Show each price with its TMA (or null)
+    let html = '';
+    for (let i = 0; i < prices.length; i++) {
+      const val = tmaValues[i];
+      const displayVal = (val !== null) ? val.toFixed(4) : '—';
+      html += `
+        <div class="result-item">
+          <span class="index">Price #${i+1} (${prices[i]})</span>
+          <span class="value">${displayVal}</span>
+        </div>
+      `;
+    }
+    resultList.innerHTML = html;
+  }
+
+  function handleCalculate() {
+    // Reset error
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = '';
+
+    // Parse input
+    const rawPrices = pricesInput.value.trim();
+    if (!rawPrices) {
+      errorMsg.textContent = 'Please enter price data.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    const prices = rawPrices.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+    if (prices.length === 0) {
+      errorMsg.textContent = 'Invalid numbers. Use comma-separated values like 22,24,23.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    const windowVal = parseInt(windowInput.value, 10);
+    if (isNaN(windowVal) || windowVal < 2) {
+      errorMsg.textContent = 'Window must be an integer ≥ 2.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    if (prices.length < windowVal * 2 - 1) {
+      errorMsg.textContent = `Not enough data. Need at least ${windowVal * 2 - 1} prices for window ${windowVal}.`;
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    const tmaValues = tma(prices, windowVal);
+    renderResult(prices, windowVal, tmaValues);
+  }
+
+  calcBtn.addEventListener('click', handleCalculate);
+  window.addEventListener('DOMContentLoaded', handleCalculate);
+</script>
 </body>
-</html>         .                                                                    
+</html>
