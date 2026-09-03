@@ -1,272 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple TMA Calculator</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    body {
-      background: #f5f7fc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      border-radius: 24px;
-      padding: 30px 35px;
-      max-width: 700px;
-      width: 100%;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-    }
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #1e293b;
-      margin-top: 0;
-      margin-bottom: 8px;
-    }
-    .sub {
-      color: #64748b;
-      margin-bottom: 24px;
-      font-size: 0.95rem;
-    }
-    .input-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .input-group label {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 180px;
-      font-weight: 500;
-      color: #334155;
-      font-size: 0.9rem;
-    }
-    .input-group input {
-      margin-top: 5px;
-      padding: 10px 14px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      font-size: 1rem;
-      transition: 0.2s;
-      background: #fafcff;
-    }
-    .input-group input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-    }
-    .btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 40px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-      width: 100%;
-      margin-top: 6px;
-    }
-    .btn:hover {
-      background: #2563eb;
-      transform: scale(1.01);
-    }
-    .result-area {
-      margin-top: 25px;
-      background: #f8fafc;
-      border-radius: 18px;
-      padding: 18px 22px;
-      border: 1px solid #eef2f6;
-      max-height: 320px;
-      overflow-y: auto;
-    }
-    .result-area h3 {
-      margin: 0 0 12px 0;
-      font-weight: 500;
-      color: #1e293b;
-      font-size: 1.1rem;
-    }
-    .result-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid #e9edf2;
-      font-size: 0.95rem;
-    }
-    .result-item:last-child {
-      border-bottom: none;
-    }
-    .index {
-      color: #64748b;
-      font-weight: 400;
-    }
-    .value {
-      font-weight: 500;
-      color: #0f172a;
-    }
-    .empty-msg {
-      color: #94a3b8;
-      font-style: italic;
-      text-align: center;
-      padding: 20px 0;
-    }
-    .error {
-      color: #ef4444;
-      background: #fee2e2;
-      padding: 10px 16px;
-      border-radius: 12px;
-      margin-top: 15px;
-      font-size: 0.9rem;
-    }
-  </style>
-</head>
-<body>
-<div class="card">
-  <h1>📈 TMA Calculator</h1>
-  <div class="sub">Triangular Moving Average = SMA of SMA</div>
+import { Telegraf } from 'telegraf';
+import { Chanify } from '@chanify/sdk';
 
-  <div class="input-group">
-    <label>
-      Prices (comma‑separated)
-      <input type="text" id="pricesInput" value="22,24,23,25,26,27,28,30,29,31" placeholder="e.g. 22,24,23,25">
-    </label>
-    <label>
-      Window (n)
-      <input type="number" id="windowInput" value="3" min="2" step="1">
-    </label>
-  </div>
+// ---------- CONFIG ----------
+const BOT_TOKEN = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE';
+const CHANIFY_KEY = 'chanify_live_c91a98310bd2b4d0c9b2af9e59dba99d'; // Replace with yours
 
-  <button class="btn" id="calcBtn">Calculate TMA</button>
+const bot = new Telegraf(BOT_TOKEN);
+const chanify = new Chanify(CHANIFY_KEY);
 
-  <div id="resultArea" class="result-area">
-    <h3>📊 TMA Values</h3>
-    <div id="resultList"></div>
-  </div>
-  <div id="errorMsg" class="error" style="display:none;"></div>
-</div>
+// ---------- TMA FUNCTION ----------
+function tma(data, window) {
+  if (!Array.isArray(data) || data.length === 0 || window < 2) return null;
 
-<script>
-  // ---------- TMA function ----------
-  function tma(data, window) {
-    if (!Array.isArray(data) || data.length === 0 || window < 2) return null;
-
-    // First SMA
-    const sma1 = [];
-    for (let i = 0; i < data.length; i++) {
-      if (i < window - 1) {
-        sma1.push(null);
-      } else {
-        let sum = 0;
-        for (let j = i - window + 1; j <= i; j++) sum += data[j];
-        sma1.push(sum / window);
-      }
+  // First SMA
+  const sma1 = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < window - 1) {
+      sma1.push(null);
+    } else {
+      let sum = 0;
+      for (let j = i - window + 1; j <= i; j++) sum += data[j];
+      sma1.push(sum / window);
     }
-
-    // Second SMA on sma1
-    const tmaVals = [];
-    for (let i = 0; i < sma1.length; i++) {
-      if (i < window - 1 || sma1[i] === null) {
-        tmaVals.push(null);
-      } else {
-        let validCount = 0;
-        let sum = 0;
-        for (let j = i - window + 1; j <= i; j++) {
-          if (sma1[j] !== null) {
-            sum += sma1[j];
-            validCount++;
-          }
-        }
-        if (validCount === window) {
-          tmaVals.push(sum / window);
-        } else {
-          tmaVals.push(null);
-        }
-      }
-    }
-    return tmaVals;
   }
 
-  // ---------- UI ----------
-  const pricesInput = document.getElementById('pricesInput');
-  const windowInput = document.getElementById('windowInput');
-  const calcBtn = document.getElementById('calcBtn');
-  const resultList = document.getElementById('resultList');
-  const errorMsg = document.getElementById('errorMsg');
+  // Second SMA on sma1
+  const tmaVals = [];
+  for (let i = 0; i < sma1.length; i++) {
+    if (i < window - 1 || sma1[i] === null) {
+      tmaVals.push(null);
+    } else {
+      let validCount = 0;
+      let sum = 0;
+      for (let j = i - window + 1; j <= i; j++) {
+        if (sma1[j] !== null) {
+          sum += sma1[j];
+          validCount++;
+        }
+      }
+      tmaVals.push(validCount === window ? sum / window : null);
+    }
+  }
+  return tmaVals;
+}
 
-  function renderResult(prices, window, tmaValues) {
-    errorMsg.style.display = 'none';
-    resultList.innerHTML = '';
-
-    if (!tmaValues || tmaValues.length === 0) {
-      resultList.innerHTML = '<div class="empty-msg">No data to display</div>';
+// ---------- BOT COMMAND ----------
+bot.command('tma', async (ctx) => {
+  try {
+    // Expect: /tma 22,24,23,25,26 3
+    const args = ctx.message.text.split(' ').slice(1);
+    if (args.length < 2) {
+      await ctx.reply('Usage: /tma <prices,comma,separated> <window>\nExample: /tma 22,24,23,25,26 3');
       return;
     }
 
-    // Show each price with its TMA (or null)
-    let html = '';
+    const pricesStr = args[0];
+    const window = parseInt(args[1], 10);
+    const prices = pricesStr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+
+    if (prices.length === 0 || isNaN(window) || window < 2) {
+      await ctx.reply('Invalid input. Use comma‑separated numbers and an integer window ≥ 2.');
+      return;
+    }
+
+    if (prices.length < window * 2 - 1) {
+      await ctx.reply(`Not enough data. Need at least ${window * 2 - 1} prices for window ${window}.`);
+      return;
+    }
+
+    const result = tma(prices, window);
+    let response = `📈 TMA (window=${window})\n`;
     for (let i = 0; i < prices.length; i++) {
-      const val = tmaValues[i];
-      const displayVal = (val !== null) ? val.toFixed(4) : '—';
-      html += `
-        <div class="result-item">
-          <span class="index">Price #${i+1} (${prices[i]})</span>
-          <span class="value">${displayVal}</span>
-        </div>
-      `;
+      const val = result[i];
+      const display = val !== null ? val.toFixed(4) : '—';
+      response += `#${i+1} (${prices[i]}) → ${display}\n`;
     }
-    resultList.innerHTML = html;
+
+    await ctx.reply(response);
+
+  } catch (err) {
+    await ctx.reply(`Error: ${err.message}`);
+  } finally {
+    // ⭐ SHOW AD AFTER EVERY BOT RESPONSE
+    try {
+      // Basic usage:
+      await chanify.showAd(ctx.chat.id, ctx.from);
+
+      // Optional: With country and delay
+      // await chanify.showAd(ctx.chat.id, ctx.from, {
+      //   country: "DE",      // optional - ISO country code
+      //   afterDelay: 1000    // ms before sending the ad
+      // });
+    } catch (adErr) {
+      console.error('Chanify ad failed:', adErr.message);
+    }
   }
+});
 
-  function handleCalculate() {
-    // Reset error
-    errorMsg.style.display = 'none';
-    errorMsg.textContent = '';
+// ---------- START BOT ----------
+bot.launch()
+  .then(() => console.log('🤖 Bot is running...'))
+  .catch(err => console.error('Launch error:', err));
 
-    // Parse input
-    const rawPrices = pricesInput.value.trim();
-    if (!rawPrices) {
-      errorMsg.textContent = 'Please enter price data.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-    const prices = rawPrices.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
-    if (prices.length === 0) {
-      errorMsg.textContent = 'Invalid numbers. Use comma-separated values like 22,24,23.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-
-    const windowVal = parseInt(windowInput.value, 10);
-    if (isNaN(windowVal) || windowVal < 2) {
-      errorMsg.textContent = 'Window must be an integer ≥ 2.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-
-    if (prices.length < windowVal * 2 - 1) {
-      errorMsg.textContent = `Not enough data. Need at least ${windowVal * 2 - 1} prices for window ${windowVal}.`;
-      errorMsg.style.display = 'block';
-      return;
-    }
-
-    const tmaValues = tma(prices, windowVal);
-    renderResult(prices, windowVal, tmaValues);
-  }
-
-  calcBtn.addEventListener('click', handleCalculate);
-  window.addEventListener('DOMContentLoaded', handleCalculate);
-</script>
-</body>
-</html>
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
